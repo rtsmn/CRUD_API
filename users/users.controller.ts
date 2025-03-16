@@ -1,12 +1,12 @@
-const express = require('express');
+import express, { Request, Response, NextFunction } from 'express';
+import Joi from 'joi';
+import validateRequest from '_middleware/validate-request';
+import Role from '_helpers/role';
+import userService from 'users/user.service';
+import { first } from 'lodash';
+import { isStrongPassword } from 'validator';
+
 const router = express.Router();
-const Joi = require('joi');
-const validateRequest = require('_middleware/validate-request');
-const Role = require('_helpers/role');
-const userService = require('users/user.service');
-const { first } = require('lodash');
-const { isStrongPassword } = require('validator');
-const { title } = require('process');
 
 // routes
 
@@ -16,43 +16,43 @@ router.post('/', createSchema, create);
 router.put('/:id', updateSchema, update);
 router.delete('/:id', _delete);
 
-module.exports = router;
+export default router;
 
 // router functions
 
-function getAll(req, res, next) {
+function getAll(req: Request, res: Response, next: NextFunction): void {
     userService.getAll()
         .then(users => res.json(users))
         .catch(next);
 }
 
-function getById(req, res, next)  {
+function getById(req: Request, res: Response, next: NextFunction): void  {
     userService.getById(req.params.id)
     .then(user => res.json(user))
     .catch(next);
-
 }
-function create(req, res, next) {
+
+function create(req: Request, res: Response, next: NextFunction): void {
     userService.create(req.body)
     .then(() => res.json({ message: 'User created' }))
     .catch(next);
 }
 
-function update (req, res, next) {
+function update(req: Request, res: Response, next: NextFunction): void {
     userService.update(req.params.id, req.body)
     .then(() => res.json({ message: 'User updated' }))
     .catch(next);
 }
 
-function _delete(req, res, next) {
-    userService.delete (req.params.id, req.body)
-    .then(() => res.json({message: 'User deleted'}))
+function _delete(req: Request, res: Response, next: NextFunction): void {
+    userService.delete(req.params.id)
+    .then(() => res.json({ message: 'User deleted' }))
     .catch(next);
 }
 
 // schema functions 
 
-function createSchema(req, res, next) {
+function createSchema(req: Request, res: Response, next: NextFunction): void {
     const schema = Joi.object({
         title: Joi.string().required(),
         firstName: Joi.string().required(),
@@ -65,7 +65,7 @@ function createSchema(req, res, next) {
     validateRequest(req, next, schema);
 }
 
-function updateSchema(req, res, next) {
+function updateSchema(req: Request, res: Response, next: NextFunction): void {
     const schema = Joi.object({
         title: Joi.string().empty(''),
         firstName: Joi.string().empty(''),
@@ -74,6 +74,6 @@ function updateSchema(req, res, next) {
         email: Joi.string().email().empty(''),
         password: Joi.string().min(6).empty(''),
         confirmPassword: Joi.string().valid(Joi.ref('password')).empty('')
-    });with('passwird', 'confirmPassword');
+    });
     validateRequest(req, next, schema);
 }
